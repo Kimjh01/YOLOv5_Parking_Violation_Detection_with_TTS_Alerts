@@ -1,6 +1,4 @@
-# YOLOv5 License Plate and Fire Hydrant Detection with TTS Alerts
-
-*by Seongeun Lee, Juho Kim, Hyein Bae*
+# YOLOv5 Parking Violation Detection with TTS Alerts
 
 This project uses YOLOv5 to detect license plates, license plate characters, and fire hydrants. It also classifies vehicle types (e.g., large, small, emergency). The system then uses a VITS TTS model to generate audio alerts based on the detected information.
 
