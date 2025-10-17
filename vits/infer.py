@@ -45,24 +45,24 @@ class vits():
         write(filename, self.hps.data.sampling_rate, audio)
         ipd.display(ipd.Audio(audio, rate=self.hps.data.sampling_rate, normalize=False))
 
-# Change to the directory where the script is located
+
 script_dir = os.path.dirname(os.path.abspath(__file__))
 os.chdir(script_dir)
 
-# Initialize TTS
+
 checkpoint_path = 'checkpoints/lasttry/G_51000.pth'
 config_path = 'checkpoints/lasttry/config.json'
 tts = vits(checkpoint_path, config_path)
 
-# Load CSV file
+
 csv_file_path = os.path.join(script_dir, '../output', 'result.csv')
 df = pd.read_csv(csv_file_path)
 
-# 열 이름과 데이터 타입 확인
+
 print(df.columns)
 print(df.dtypes)
 
-# Generate TTS messages based on conditions
+
 messages = []
 
 def add_space_to_license_plate(plate):
@@ -73,7 +73,7 @@ for index, row in df.iterrows():
     fire_hydrant_detected = row["소화전 탐지"] == "탐지"
     access_result = row["출입 가능 여부"]
 
-    # 소화전 탐지 여부를 우선적으로 확인하여 메시지를 생성
+
     if fire_hydrant_detected:
         messages.append(f"{license_plate} 번님 옥외 소화전 앞 불법주차금지입니다.")
     else:
@@ -82,7 +82,7 @@ for index, row in df.iterrows():
         elif access_result == "출입 불가능":
             messages.append(f"{license_plate} 번님 금일 주차 불가능입니다.")
 
-# Convert messages to speech and save as audio files
+
 for i, message in enumerate(messages):
     audio = tts.infer(message, 0)
     output_audio_path = os.path.join(script_dir, f'../output/user_tts_output_{i}.wav')

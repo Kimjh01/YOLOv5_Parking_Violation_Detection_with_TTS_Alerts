@@ -1,4 +1,4 @@
-# Ultralytics YOLOv5 🚀, AGPL-3.0 license
+
 """utils/initialization."""
 
 import contextlib
@@ -12,7 +12,7 @@ def emojis(str=""):
 
 
 class TryExcept(contextlib.ContextDecorator):
-    # YOLOv5 TryExcept class. Usage: @TryExcept() decorator or 'with TryExcept():' context manager
+
     def __init__(self, msg=""):
         """Initializes TryExcept with an optional message, used as a decorator or context manager for error handling."""
         self.msg = msg
@@ -65,24 +65,24 @@ def notebook_init(verbose=True):
     from ultralytics.utils.checks import check_requirements
 
     from utils.general import check_font, is_colab
-    from utils.torch_utils import select_device  # imports
+    from utils.torch_utils import select_device
 
     check_font()
 
     import psutil
 
     if check_requirements("wandb", install=False):
-        os.system("pip uninstall -y wandb")  # eliminate unexpected account creation prompt with infinite hang
+        os.system("pip uninstall -y wandb")
     if is_colab():
-        shutil.rmtree("/content/sample_data", ignore_errors=True)  # remove colab /sample_data directory
+        shutil.rmtree("/content/sample_data", ignore_errors=True)
 
-    # System info
+
     display = None
     if verbose:
-        gb = 1 << 30  # bytes to GiB (1024 ** 3)
+        gb = 1 << 30
         ram = psutil.virtual_memory().total
         total, used, free = shutil.disk_usage("/")
-        with contextlib.suppress(Exception):  # clear display if ipython is installed
+        with contextlib.suppress(Exception):
             from IPython import display
 
             display.clear_output()

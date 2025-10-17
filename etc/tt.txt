@@ -1,6 +1,0 @@
-img_path = r"C:\Users\PC-3\Desktop\test1.jpg"
-
-model_path1 = r"C:\Users\PC-3\yolov5\car_epoch100.pt"
-model_path2 = r"C:\Users\PC-3\yolov5\fire_epoch200.pt"
-
-옥외소화전불법주정차금지 소화전 차량번호

@@ -1,4 +1,4 @@
-# Ultralytics YOLOv5 🚀, AGPL-3.0 license
+
 """Model validation metrics."""
 
 import numpy as np
@@ -55,11 +55,11 @@ def ap_per_class_box_and_mask(
 
 class Metric:
     def __init__(self) -> None:
-        self.p = []  # (nc, )
-        self.r = []  # (nc, )
-        self.f1 = []  # (nc, )
-        self.all_ap = []  # (nc, 10)
-        self.ap_class_index = []  # (nc, )
+        self.p = []
+        self.r = []
+        self.f1 = []
+        self.all_ap = []
+        self.ap_class_index = []
 
     @property
     def ap50(self):
@@ -184,19 +184,19 @@ class Metrics:
 
 KEYS = [
     "train/box_loss",
-    "train/seg_loss",  # train loss
+    "train/seg_loss",
     "train/obj_loss",
     "train/cls_loss",
     "metrics/precision(B)",
     "metrics/recall(B)",
     "metrics/mAP_0.5(B)",
-    "metrics/mAP_0.5:0.95(B)",  # metrics
+    "metrics/mAP_0.5:0.95(B)",
     "metrics/precision(M)",
     "metrics/recall(M)",
     "metrics/mAP_0.5(M)",
-    "metrics/mAP_0.5:0.95(M)",  # metrics
+    "metrics/mAP_0.5:0.95(M)",
     "val/box_loss",
-    "val/seg_loss",  # val loss
+    "val/seg_loss",
     "val/obj_loss",
     "val/cls_loss",
     "x/lr0",

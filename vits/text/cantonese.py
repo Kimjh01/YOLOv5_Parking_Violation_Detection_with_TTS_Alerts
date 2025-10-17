@@ -5,7 +5,7 @@ import opencc
 
 converter = opencc.OpenCC('jyutjyu')
 
-# List of (Latin alphabet, ipa) pairs:
+
 _latin_to_ipa = [(re.compile('%s' % x[0]), x[1]) for x in [
     ('A', 'ei˥'),
     ('B', 'biː˥'),

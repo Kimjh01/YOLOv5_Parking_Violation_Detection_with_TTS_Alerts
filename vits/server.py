@@ -37,7 +37,7 @@ def create_to_phoneme_fn(hps):
 
 
 css = """
-        #advanced-btn {
+
             color: white;
             border-color: black;
             background: black;
@@ -48,7 +48,7 @@ css = """
             padding: 2px 8px;
             border-radius: 14px !important;
         }
-        #advanced-options {
+
             display: none;
             margin-bottom: 20px;
         }
@@ -101,10 +101,10 @@ def main():
                         tts_output2 = gr.Audio(label="Output Audio")
                         tts_submit.click(tts_fn, [tts_input1, tts_input2, tts_input3],
                                             [tts_output1, tts_output2])
-            
+
         gr.Markdown(
             "Reference \n\n"
-            "- [https://huggingface.co/spaces/kdrkdrkdr/ProsekaTTS](https://huggingface.co/spaces/kdrkdrkdr/ProsekaTTS)\n\n"   
+            "- [https://huggingface.co/spaces/kdrkdrkdr/ProsekaTTS](https://huggingface.co/spaces/kdrkdrkdr/ProsekaTTS)\n\n"
         )
     app.queue(concurrency_count=3).launch(show_api=False)
 

@@ -3,20 +3,20 @@ from unidecode import unidecode
 import pyopenjtalk
 
 
-# Regular expression matching Japanese without punctuation marks:
+
 _japanese_characters = re.compile(
     r'[A-Za-z\d\u3005\u3040-\u30ff\u4e00-\u9fff\uff11-\uff19\uff21-\uff3a\uff41-\uff5a\uff66-\uff9d]')
 
-# Regular expression matching non-Japanese characters or punctuation marks:
+
 _japanese_marks = re.compile(
     r'[^A-Za-z\d\u3005\u3040-\u30ff\u4e00-\u9fff\uff11-\uff19\uff21-\uff3a\uff41-\uff5a\uff66-\uff9d]')
 
-# List of (symbol, Japanese) pairs for marks:
+
 _symbols_to_japanese = [(re.compile('%s' % x[0]), x[1]) for x in [
     ('％', 'パーセント')
 ]]
 
-# List of (romaji, ipa) pairs for marks:
+
 _romaji_to_ipa = [(re.compile('%s' % x[0]), x[1]) for x in [
     ('ts', 'ʦ'),
     ('u', 'ɯ'),
@@ -32,7 +32,7 @@ _romaji_to_ipa = [(re.compile('%s' % x[0]), x[1]) for x in [
     ('r', 'ɾ')
 ]]
 
-# List of (romaji, ipa2) pairs for marks:
+
 _romaji_to_ipa2 = [(re.compile('%s' % x[0]), x[1]) for x in [
     ('u', 'ɯ'),
     ('ʧ', 'tʃ'),
@@ -48,7 +48,7 @@ _romaji_to_ipa2 = [(re.compile('%s' % x[0]), x[1]) for x in [
     ('r', 'ɾ')
 ]]
 
-# List of (consonant, sokuon) pairs:
+
 _real_sokuon = [(re.compile('%s' % x[0]), x[1]) for x in [
     (r'Q([↑↓]*[kg])', r'k#\1'),
     (r'Q([↑↓]*[tdjʧ])', r't#\1'),
@@ -56,7 +56,7 @@ _real_sokuon = [(re.compile('%s' % x[0]), x[1]) for x in [
     (r'Q([↑↓]*[pb])', r'p#\1')
 ]]
 
-# List of (consonant, hatsuon) pairs:
+
 _real_hatsuon = [(re.compile('%s' % x[0]), x[1]) for x in [
     (r'N([↑↓]*[pbm])', r'm\1'),
     (r'N([↑↓]*[ʧʥj])', r'n^\1'),
@@ -89,7 +89,7 @@ def japanese_to_romaji_with_accent(text):
                                                                'ʃ').replace('cl', 'Q')
                 else:
                     continue
-                # n_moras = int(re.search(r'/F:(\d+)_', label).group(1))
+
                 a1 = int(re.search(r"/A:(\-?[0-9]+)\+", label).group(1))
                 a2 = int(re.search(r"\+(\d+)\+", label).group(1))
                 a3 = int(re.search(r"\+(\d+)/", label).group(1))
@@ -98,13 +98,13 @@ def japanese_to_romaji_with_accent(text):
                 else:
                     a2_next = int(
                         re.search(r"\+(\d+)\+", labels[n + 1]).group(1))
-                # Accent phrase boundary
+
                 if a3 == 1 and a2_next == 1:
                     text += ' '
-                # Falling
+
                 elif a1 == 0 and a2_next == a2 + 1:
                     text += '↓'
-                # Rising
+
                 elif a2 == 1 and a2_next == 2:
                     text += '↑'
         if i < len(marks):

@@ -1,4 +1,4 @@
-# Ultralytics YOLOv5 🚀, AGPL-3.0 license
+
 """Plotting utils."""
 
 import contextlib
@@ -22,14 +22,14 @@ from utils import TryExcept, threaded
 from utils.general import LOGGER, clip_boxes, increment_path, xywh2xyxy, xyxy2xywh
 from utils.metrics import fitness
 
-# Settings
+
 RANK = int(os.getenv("RANK", -1))
 matplotlib.rc("font", **{"size": 11})
-matplotlib.use("Agg")  # for writing to files only
+matplotlib.use("Agg")
 
 
 class Colors:
-    # Ultralytics color palette https://ultralytics.com/
+
     def __init__(self):
         """
         Initializes the Colors class with a palette derived from Ultralytics color scheme, converting hex codes to RGB.
@@ -72,7 +72,7 @@ class Colors:
         return tuple(int(h[1 + i : 1 + i + 2], 16) for i in (0, 2, 4))
 
 
-colors = Colors()  # create instance for 'from utils.plots import colors'
+colors = Colors()
 
 
 def feature_visualization(x, module_type, stage, n=32, save_dir=Path("runs/detect/exp")):
@@ -85,24 +85,24 @@ def feature_visualization(x, module_type, stage, n=32, save_dir=Path("runs/detec
     """
     if ("Detect" not in module_type) and (
         "Segment" not in module_type
-    ):  # 'Detect' for Object Detect task,'Segment' for Segment task
-        batch, channels, height, width = x.shape  # batch, channels, height, width
+    ):
+        batch, channels, height, width = x.shape
         if height > 1 and width > 1:
-            f = save_dir / f"stage{stage}_{module_type.split('.')[-1]}_features.png"  # filename
+            f = save_dir / f"stage{stage}_{module_type.split('.')[-1]}_features.png"
 
-            blocks = torch.chunk(x[0].cpu(), channels, dim=0)  # select batch index 0, block by channels
-            n = min(n, channels)  # number of plots
-            fig, ax = plt.subplots(math.ceil(n / 8), 8, tight_layout=True)  # 8 rows x n/8 cols
+            blocks = torch.chunk(x[0].cpu(), channels, dim=0)
+            n = min(n, channels)
+            fig, ax = plt.subplots(math.ceil(n / 8), 8, tight_layout=True)
             ax = ax.ravel()
             plt.subplots_adjust(wspace=0.05, hspace=0.05)
             for i in range(n):
-                ax[i].imshow(blocks[i].squeeze())  # cmap='gray'
+                ax[i].imshow(blocks[i].squeeze())
                 ax[i].axis("off")
 
             LOGGER.info(f"Saving {f}... ({n}/{channels})")
             plt.savefig(f, dpi=300, bbox_inches="tight")
             plt.close()
-            np.save(str(f.with_suffix(".npy")), x[0].cpu().numpy())  # npy save
+            np.save(str(f.with_suffix(".npy")), x[0].cpu().numpy())
 
 
 def hist2d(x, y, n=100):
@@ -122,14 +122,14 @@ def butter_lowpass_filtfilt(data, cutoff=1500, fs=50000, order=5):
     """Applies a low-pass Butterworth filter to `data` with specified `cutoff`, `fs`, and `order`."""
     from scipy.signal import butter, filtfilt
 
-    # https://stackoverflow.com/questions/28536191/how-to-filter-smooth-with-scipy-numpy
+
     def butter_lowpass(cutoff, fs, order):
         nyq = 0.5 * fs
         normal_cutoff = cutoff / nyq
         return butter(order, normal_cutoff, btype="low", analog=False)
 
     b, a = butter_lowpass(cutoff, fs, order=order)
-    return filtfilt(b, a, data)  # forward-backward filter
+    return filtfilt(b, a, data)
 
 
 def output_to_target(output, max_det=300):
@@ -152,50 +152,50 @@ def plot_images(images, targets, paths=None, fname="images.jpg", names=None):
     if isinstance(targets, torch.Tensor):
         targets = targets.cpu().numpy()
 
-    max_size = 1920  # max image size
-    max_subplots = 16  # max image subplots, i.e. 4x4
-    bs, _, h, w = images.shape  # batch size, _, height, width
-    bs = min(bs, max_subplots)  # limit plot images
-    ns = np.ceil(bs**0.5)  # number of subplots (square)
+    max_size = 1920
+    max_subplots = 16
+    bs, _, h, w = images.shape
+    bs = min(bs, max_subplots)
+    ns = np.ceil(bs**0.5)
     if np.max(images[0]) <= 1:
-        images *= 255  # de-normalise (optional)
+        images *= 255
 
-    # Build Image
-    mosaic = np.full((int(ns * h), int(ns * w), 3), 255, dtype=np.uint8)  # init
+
+    mosaic = np.full((int(ns * h), int(ns * w), 3), 255, dtype=np.uint8)
     for i, im in enumerate(images):
-        if i == max_subplots:  # if last batch has fewer images than we expect
+        if i == max_subplots:
             break
-        x, y = int(w * (i // ns)), int(h * (i % ns))  # block origin
+        x, y = int(w * (i // ns)), int(h * (i % ns))
         im = im.transpose(1, 2, 0)
         mosaic[y : y + h, x : x + w, :] = im
 
-    # Resize (optional)
+
     scale = max_size / ns / max(h, w)
     if scale < 1:
         h = math.ceil(scale * h)
         w = math.ceil(scale * w)
         mosaic = cv2.resize(mosaic, tuple(int(x * ns) for x in (w, h)))
 
-    # Annotate
-    fs = int((h + w) * ns * 0.01)  # font size
+
+    fs = int((h + w) * ns * 0.01)
     annotator = Annotator(mosaic, line_width=round(fs / 10), font_size=fs, pil=True, example=names)
     for i in range(i + 1):
-        x, y = int(w * (i // ns)), int(h * (i % ns))  # block origin
-        annotator.rectangle([x, y, x + w, y + h], None, (255, 255, 255), width=2)  # borders
+        x, y = int(w * (i // ns)), int(h * (i % ns))
+        annotator.rectangle([x, y, x + w, y + h], None, (255, 255, 255), width=2)
         if paths:
-            annotator.text([x + 5, y + 5], text=Path(paths[i]).name[:40], txt_color=(220, 220, 220))  # filenames
+            annotator.text([x + 5, y + 5], text=Path(paths[i]).name[:40], txt_color=(220, 220, 220))
         if len(targets) > 0:
-            ti = targets[targets[:, 0] == i]  # image targets
+            ti = targets[targets[:, 0] == i]
             boxes = xywh2xyxy(ti[:, 2:6]).T
             classes = ti[:, 1].astype("int")
-            labels = ti.shape[1] == 6  # labels if no conf column
-            conf = None if labels else ti[:, 6]  # check for confidence presence (label vs pred)
+            labels = ti.shape[1] == 6
+            conf = None if labels else ti[:, 6]
 
             if boxes.shape[1]:
-                if boxes.max() <= 1.01:  # if normalized with tolerance 0.01
-                    boxes[[0, 2]] *= w  # scale to pixels
+                if boxes.max() <= 1.01:
+                    boxes[[0, 2]] *= w
                     boxes[[1, 3]] *= h
-                elif scale < 1:  # absolute coords need scale if image scales
+                elif scale < 1:
                     boxes *= scale
             boxes[[0, 2]] += x
             boxes[[1, 3]] += y
@@ -203,15 +203,15 @@ def plot_images(images, targets, paths=None, fname="images.jpg", names=None):
                 cls = classes[j]
                 color = colors(cls)
                 cls = names[cls] if names else cls
-                if labels or conf[j] > 0.25:  # 0.25 conf thresh
+                if labels or conf[j] > 0.25:
                     label = f"{cls}" if labels else f"{cls} {conf[j]:.1f}"
                     annotator.box_label(box, label, color=color)
-    annotator.im.save(fname)  # save
+    annotator.im.save(fname)
 
 
 def plot_lr_scheduler(optimizer, scheduler, epochs=300, save_dir=""):
     """Plots learning rate schedule for given optimizer and scheduler, saving plot to `save_dir`."""
-    optimizer, scheduler = copy(optimizer), copy(scheduler)  # do not modify originals
+    optimizer, scheduler = copy(optimizer), copy(scheduler)
     y = []
     for _ in range(epochs):
         scheduler.step()
@@ -273,12 +273,12 @@ def plot_val_study(file="", dir="", x=None):
     Example: from utils.plots import *; plot_val_study()
     """
     save_dir = Path(file).parent if file else Path(dir)
-    plot2 = False  # plot additional results
+    plot2 = False
     if plot2:
         ax = plt.subplots(2, 4, figsize=(10, 6), tight_layout=True)[1].ravel()
 
     fig2, ax2 = plt.subplots(1, 1, figsize=(8, 4), tight_layout=True)
-    # for f in [save_dir / f'study_coco_{x}.txt' for x in ['yolov5n6', 'yolov5s6', 'yolov5m6', 'yolov5l6', 'yolov5x6']]:
+
     for f in sorted(save_dir.glob("study*.txt")):
         y = np.loadtxt(f, dtype=np.float32, usecols=[0, 1, 2, 3, 7, 8, 9], ndmin=2).T
         x = np.arange(y.shape[1]) if x is None else np.array(x)
@@ -320,25 +320,25 @@ def plot_val_study(file="", dir="", x=None):
     plt.savefig(f, dpi=300)
 
 
-@TryExcept()  # known issue https://github.com/ultralytics/yolov5/issues/5395
+@TryExcept()
 def plot_labels(labels, names=(), save_dir=Path("")):
     """Plots dataset labels, saving correlogram and label images, handles classes, and visualizes bounding boxes."""
     LOGGER.info(f"Plotting labels to {save_dir / 'labels.jpg'}... ")
-    c, b = labels[:, 0], labels[:, 1:].transpose()  # classes, boxes
-    nc = int(c.max() + 1)  # number of classes
+    c, b = labels[:, 0], labels[:, 1:].transpose()
+    nc = int(c.max() + 1)
     x = pd.DataFrame(b.transpose(), columns=["x", "y", "width", "height"])
 
-    # seaborn correlogram
+
     sn.pairplot(x, corner=True, diag_kind="auto", kind="hist", diag_kws=dict(bins=50), plot_kws=dict(pmax=0.9))
     plt.savefig(save_dir / "labels_correlogram.jpg", dpi=200)
     plt.close()
 
-    # matplotlib labels
-    matplotlib.use("svg")  # faster
+
+    matplotlib.use("svg")
     ax = plt.subplots(2, 2, figsize=(8, 8), tight_layout=True)[1].ravel()
     y = ax[0].hist(c, bins=np.linspace(0, nc, nc + 1) - 0.5, rwidth=0.8)
-    with contextlib.suppress(Exception):  # color histogram bars by class
-        [y[2].patches[i].set_color([x / 255 for x in colors(i)]) for i in range(nc)]  # known issue #3195
+    with contextlib.suppress(Exception):
+        [y[2].patches[i].set_color([x / 255 for x in colors(i)]) for i in range(nc)]
     ax[0].set_ylabel("instances")
     if 0 < len(names) < 30:
         ax[0].set_xticks(range(len(names)))
@@ -348,12 +348,12 @@ def plot_labels(labels, names=(), save_dir=Path("")):
     sn.histplot(x, x="x", y="y", ax=ax[2], bins=50, pmax=0.9)
     sn.histplot(x, x="width", y="height", ax=ax[3], bins=50, pmax=0.9)
 
-    # rectangles
-    labels[:, 1:3] = 0.5  # center
+
+    labels[:, 1:3] = 0.5
     labels[:, 1:] = xywh2xyxy(labels[:, 1:]) * 2000
     img = Image.fromarray(np.ones((2000, 2000, 3), dtype=np.uint8) * 255)
     for cls, *box in labels[:1000]:
-        ImageDraw.Draw(img).rectangle(box, width=1, outline=colors(cls))  # plot
+        ImageDraw.Draw(img).rectangle(box, width=1, outline=colors(cls))
     ax[1].imshow(img)
     ax[1].axis("off")
 
@@ -373,12 +373,12 @@ def imshow_cls(im, labels=None, pred=None, names=None, nmax=25, verbose=False, f
     names = names or [f"class{i}" for i in range(1000)]
     blocks = torch.chunk(
         denormalize(im.clone()).cpu().float(), len(im), dim=0
-    )  # select batch index 0, block by channels
-    n = min(len(blocks), nmax)  # number of plots
-    m = min(8, round(n**0.5))  # 8 x 8 default
-    fig, ax = plt.subplots(math.ceil(n / m), m)  # 8 rows x n/8 cols
+    )
+    n = min(len(blocks), nmax)
+    m = min(8, round(n**0.5))
+    fig, ax = plt.subplots(math.ceil(n / m), m)
     ax = ax.ravel() if m > 1 else [ax]
-    # plt.subplots_adjust(wspace=0.05, hspace=0.05)
+
     for i in range(n):
         ax[i].imshow(blocks[i].squeeze().permute((1, 2, 0)).numpy().clip(0.0, 1.0))
         ax[i].axis("off")
@@ -407,21 +407,21 @@ def plot_evolve(evolve_csv="path/to/evolve.csv"):
     keys = [x.strip() for x in data.columns]
     x = data.values
     f = fitness(x)
-    j = np.argmax(f)  # max fitness index
+    j = np.argmax(f)
     plt.figure(figsize=(10, 12), tight_layout=True)
     matplotlib.rc("font", **{"size": 8})
     print(f"Best results from row {j} of {evolve_csv}:")
     for i, k in enumerate(keys[7:]):
         v = x[:, 7 + i]
-        mu = v[j]  # best single result
+        mu = v[j]
         plt.subplot(6, 5, i + 1)
         plt.scatter(v, f, c=hist2d(v, f, 20), cmap="viridis", alpha=0.8, edgecolors="none")
         plt.plot(mu, f.max(), "k+", markersize=15)
-        plt.title(f"{k} = {mu:.3g}", fontdict={"size": 9})  # limit to 40 characters
+        plt.title(f"{k} = {mu:.3g}", fontdict={"size": 9})
         if i % 5 != 0:
             plt.yticks([])
         print(f"{k:>15}: {mu:.3g}")
-    f = evolve_csv.with_suffix(".png")  # filename
+    f = evolve_csv.with_suffix(".png")
     plt.savefig(f, dpi=200)
     plt.close()
     print(f"Saved {f}")
@@ -445,12 +445,12 @@ def plot_results(file="path/to/results.csv", dir=""):
             x = data.values[:, 0]
             for i, j in enumerate([1, 2, 3, 4, 5, 8, 9, 10, 6, 7]):
                 y = data.values[:, j].astype("float")
-                # y[y == 0] = np.nan  # don't show zero values
-                ax[i].plot(x, y, marker=".", label=f.stem, linewidth=2, markersize=8)  # actual results
-                ax[i].plot(x, gaussian_filter1d(y, sigma=3), ":", label="smooth", linewidth=2)  # smoothing line
+
+                ax[i].plot(x, y, marker=".", label=f.stem, linewidth=2, markersize=8)
+                ax[i].plot(x, gaussian_filter1d(y, sigma=3), ":", label="smooth", linewidth=2)
                 ax[i].set_title(s[j], fontsize=12)
-                # if j in [8, 9, 10]:  # share train and val loss y axes
-                #     ax[i].get_shared_y_axes().join(ax[i], ax[i - 5])
+
+
         except Exception as e:
             LOGGER.info(f"Warning: Plotting error for {f}: {e}")
     ax[1].legend()
@@ -469,11 +469,11 @@ def profile_idetection(start=0, stop=0, labels=(), save_dir=""):
     files = list(Path(save_dir).glob("frames*.txt"))
     for fi, f in enumerate(files):
         try:
-            results = np.loadtxt(f, ndmin=2).T[:, 90:-30]  # clip first and last rows
-            n = results.shape[1]  # number of rows
+            results = np.loadtxt(f, ndmin=2).T[:, 90:-30]
+            n = results.shape[1]
             x = np.arange(start, min(stop, n) if stop else n)
             results = results[:, x]
-            t = results[0] - results[0].min()  # set t0=0s
+            t = results[0] - results[0].min()
             results[0] = x
             for i, a in enumerate(ax):
                 if i < len(results):
@@ -481,8 +481,8 @@ def profile_idetection(start=0, stop=0, labels=(), save_dir=""):
                     a.plot(t, results[i], marker=".", label=label, linewidth=1, markersize=5)
                     a.set_title(s[i])
                     a.set_xlabel("time (s)")
-                    # if fi == len(files) - 1:
-                    #     a.set_ylim(bottom=0)
+
+
                     for side in ["top", "right"]:
                         a.spines[side].set_visible(False)
                 else:
@@ -498,16 +498,16 @@ def save_one_box(xyxy, im, file=Path("im.jpg"), gain=1.02, pad=10, square=False,
     for BGR.
     """
     xyxy = torch.tensor(xyxy).view(-1, 4)
-    b = xyxy2xywh(xyxy)  # boxes
+    b = xyxy2xywh(xyxy)
     if square:
-        b[:, 2:] = b[:, 2:].max(1)[0].unsqueeze(1)  # attempt rectangle to square
-    b[:, 2:] = b[:, 2:] * gain + pad  # box wh * gain + pad
+        b[:, 2:] = b[:, 2:].max(1)[0].unsqueeze(1)
+    b[:, 2:] = b[:, 2:] * gain + pad
     xyxy = xywh2xyxy(b).long()
     clip_boxes(xyxy, im.shape)
     crop = im[int(xyxy[0, 1]) : int(xyxy[0, 3]), int(xyxy[0, 0]) : int(xyxy[0, 2]), :: (1 if BGR else -1)]
     if save:
-        file.parent.mkdir(parents=True, exist_ok=True)  # make directory
+        file.parent.mkdir(parents=True, exist_ok=True)
         f = str(increment_path(file).with_suffix(".jpg"))
-        # cv2.imwrite(f, crop)  # save BGR, https://github.com/ultralytics/yolov5/issues/7007 chroma subsampling issue
-        Image.fromarray(crop[..., ::-1]).save(f, quality=95, subsampling=0)  # save RGB
+
+        Image.fromarray(crop[..., ::-1]).save(f, quality=95, subsampling=0)
     return crop

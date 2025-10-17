@@ -4,97 +4,118 @@ import numpy as np
 import os
 import datetime
 import pandas as pd
-from detect_license_plate import detect_license_plate
+import argparse
+import subprocess
 from vehicle_classification import classify_vehicle, can_enter_public_office
+from vits.infer import vits
 
-# 현재 스크립트의 디렉토리 경로
-current_dir = os.path.dirname(os.path.abspath(__file__))
+def get_args():
+    parser = argparse.ArgumentParser(description='YOLOv5 License Plate and Fire Hydrant Detection')
+    parser.add_argument('--image', type=str, default='img/able12.jpg', help='path to input image')
+    parser.add_argument('--car_model', type=str, default='car_epoch100.pt', help='path to car detection model')
+    parser.add_argument('--fire_model', type=str, default='fire_epoch200.pt', help='path to fire hydrant detection model')
+    parser.add_argument('--vits_checkpoint', type=str, default='vits/checkpoints/lasttry/G_51000.pth', help='path to vits checkpoint')
+    parser.add_argument('--vits_config', type=str, default='vits/checkpoints/lasttry/config.json', help='path to vits config')
+    parser.add_argument('--output_dir', type=str, default='output', help='path to output directory')
+    parser.add_argument('--threshold', type=float, default=0.5, help='confidence threshold for detection')
+    return parser.parse_args()
 
-# 경로 설정
-img_path = os.path.join(current_dir, 'img/able12.jpg')
-model_path1 = os.path.join(current_dir, 'car_epoch100.pt')
-model_path2 = os.path.join(current_dir, 'fire_epoch200.pt')
+def detect_objects(img, model, threshold):
+    results = model(img)
+    detections = results.xyxy[0].cpu().numpy()
+    filtered_detections = [det for det in detections if det[4] >= threshold]
+    return filtered_detections
 
-# 모델 로드
-model1 = torch.hub.load('ultralytics/yolov5', 'custom', path=model_path1)
-model2 = torch.hub.load('ultralytics/yolov5', 'custom', path=model_path2)
-
-# 이미지 로드
-img = cv2.imread(img_path)
-assert img is not None, 'Image not found'
-
-# 탐지
-results1 = model1(img)
-results2 = model2(img)
-
-# 바운딩 박스를 그릴 결과 필터링 (임계값 0.7 이상)
-threshold = 0.5
-detections1 = results1.xyxy[0].cpu().numpy()
-detections2 = results2.xyxy[0].cpu().numpy()
-
-filtered_detections1 = [det for det in detections1 if det[4] >= threshold]
-filtered_detections2 = [det for det in detections2 if det[4] >= threshold]
-
-# 바운딩 박스 그리기 함수
-def draw_boxes(detections, img, model):
+def draw_boxes(img, detections, model):
     for det in detections:
         x1, y1, x2, y2, conf, cls = det
         label = f'{model.names[int(cls)]} {conf:.2f}'
-        color = (0, 255, 0)  # Green color for bounding box
+        color = (0, 255, 0)
         cv2.rectangle(img, (int(x1), int(y1)), (int(x2), int(y2)), color, 2)
-        cv2.putText(img, label, (int(x1), int(y1)-10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, color, 2)
+        cv2.putText(img, label, (int(x1), int(y1) - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, color, 2)
+    return img
 
-# 이미지에 바운딩 박스 그리기
-draw_boxes(filtered_detections1, img, model1)
-draw_boxes(filtered_detections2, img, model2)
+def extract_license_plate(detections, model):
+    sorted_detections = sorted(detections, key=lambda x: x[0])
+    label_map = {
+        'beo': '버', 'bo': '보', 'bu': '부', 'da': '다', 'deo': '더', 'do': '도', 'du': '두',
+        'eo': '어', 'ga': '가', 'geo': '거', 'go': '고', 'gu': '구', 'ha': '하', 'heo': '허',
+        'ho': '호', 'jeo': '저', 'jo': '조', 'ju': '주', 'la': '라', 'leo': '러', 'lo': '로',
+        'lu': '루', 'ma': '마', 'meo': '머', 'mo': '모', 'mu': '무', 'na': '나', 'neo': '너',
+        'no': '노', 'nu': '누', 'o': '오', 'seo': '서', 'so': '소', 'su': '수', 'u': '우'
+    }
+    labels = [label_map.get(model.names[int(det[5])], model.names[int(det[5])]) for det in sorted_detections]
+    license_plate = ''.join(labels)
+    if license_plate.startswith('license_plate'):
+        license_plate = license_plate[len('license_plate'):]
+    return license_plate
 
-# 결과 저장
-output_path = os.path.join(current_dir, 'output/result.jpg')
-os.makedirs(os.path.dirname(output_path), exist_ok=True)
-cv2.imwrite(output_path, img)
-print(f"Result saved to {output_path}")
+def main(args):
 
-# 번호판 인식 및 바운딩 박스 그리기
-license_plate_img, license_plate = detect_license_plate(img_path, model_path1)
-print(f"Extracted license plate: {license_plate}")
+    os.makedirs(args.output_dir, exist_ok=True)
+    model1 = torch.hub.load('ultralytics/yolov5', 'custom', path=args.car_model)
+    model2 = torch.hub.load('ultralytics/yolov5', 'custom', path=args.fire_model)
+    tts_model = vits(args.vits_checkpoint, args.vits_config)
+    img = cv2.imread(args.image)
+    assert img is not None, f'Image not found at {args.image}'
+    car_detections = detect_objects(img, model1, args.threshold)
+    fire_detections = detect_objects(img, model2, args.threshold)
+    img_with_boxes = draw_boxes(img.copy(), car_detections, model1)
+    img_with_boxes = draw_boxes(img_with_boxes, fire_detections, model2)
+    result_img_path = os.path.join(args.output_dir, 'result.jpg')
+    cv2.imwrite(result_img_path, img_with_boxes)
+    print(f"Result image saved to {result_img_path}")
 
-# 결과 저장
-output_path_license_plate = os.path.join(current_dir, 'output/result_license_plate.jpg')
-cv2.imwrite(output_path_license_plate, license_plate_img)
-print(f"Result saved to {output_path_license_plate}")
+    license_plate = extract_license_plate(car_detections, model1)
+    print(f"Extracted license plate: {license_plate}")
 
-# 차량 분류 및 출입 가능 여부 확인
-if license_plate:
-    vehicle_type = classify_vehicle(license_plate)
-    access_result = can_enter_public_office(license_plate)
-    print(f"차량 유형: {vehicle_type}")
-    print(f"출입 가능 여부: {access_result}")
-else:
-    vehicle_type = "알 수 없음"
-    access_result = "알 수 없음"
+    if license_plate:
+        vehicle_type = classify_vehicle(license_plate)
+        access_result = can_enter_public_office(license_plate)
+    else:
+        vehicle_type = "알 수 없음"
+        access_result = "알 수 없음"
 
-# 소화전 탐지 결과 확인
-fire_hydrant_detected = len(filtered_detections2) > 0
 
-# 결과를 CSV 파일로 저장
-results = [{
-    "차량 번호": license_plate if license_plate else "인식 실패",
-    "차량 유형": vehicle_type,
-    "출입 가능 여부": access_result,
-    "날짜": datetime.datetime.today().strftime('%Y-%m-%d'),  # 날짜 형식 지정
-    "소화전 탐지": "탐지" if fire_hydrant_detected else "비탐지"
-}]
+    fire_hydrant_detected = len(fire_detections) > 0
+    results = [{
+        "차량 번호": license_plate if license_plate else "인식 실패",
+        "차량 유형": vehicle_type,
+        "출입 가능 여부": access_result,
+        "날짜": datetime.datetime.today().strftime('%Y-%m-%d'),
+        "소화전 탐지": "탐지" if fire_hydrant_detected else "비탐지"
+    }]
+    csv_output_path = os.path.join(args.output_dir, 'result.csv')
+    df = pd.DataFrame(results)
+    df.to_csv(csv_output_path, index=False, encoding='utf-8-sig')
+    print(f"Results saved to {csv_output_path}")
+    messages = []
+    def add_space_to_license_plate(plate):
+        return '  '.join(list(plate))
 
-csv_output_path = os.path.join(current_dir, 'output/result.csv')
-df = pd.DataFrame(results)
-df.to_csv(csv_output_path, index=False, encoding='utf-8-sig')
-print(f"결과가 {csv_output_path}에 저장되었습니다.")
+    for index, row in df.iterrows():
+        lp_spaced = add_space_to_license_plate(row["차량 번호"])
+        fire_detected = row["소화전 탐지"] == "탐지"
+        access = row["출입 가능 여부"]
+        if fire_detected:
+            messages.append(f"{lp_spaced} 번님 옥외 소화전 앞 불법주차금지입니다.")
+        else:
+            if access == "출입 가능":
+                messages.append(f"{lp_spaced} 번님 금일 주차가능입니다.")
+            elif access == "출입 불가능":
+                messages.append(f"{lp_spaced} 번님 금일 주차 불가능입니다.")
 
-# infer.py 스크립트를 실행하여 TTS를 수행
-import subprocess
-subprocess.run(["python", os.path.join(current_dir, "vits/infer.py")])
-wav_files = [f for f in os.listdir(os.path.join(current_dir, 'output')) if f.endswith('.wav')]
-for wav_file in wav_files:
-    wav_file_path = os.path.join(current_dir, 'output', wav_file)
-    print(f"Playing {wav_file_path}")
-    subprocess.run(['aplay', wav_file_path] if os.name != 'nt' else ['powershell', '-c', f'(New-Object Media.SoundPlayer "{wav_file_path}").PlaySync();'])
+    for i, message in enumerate(messages):
+        audio = tts_model.infer(message, 0)
+        output_audio_path = os.path.join(args.output_dir, f'user_tts_output_{i}.wav')
+        tts_model.save_audio(audio, output_audio_path)
+        print(f"TTS output saved to {output_audio_path}")
+
+        if os.name == 'nt':
+            subprocess.run(['powershell', '-c', f'(New-Object Media.SoundPlayer "{output_audio_path}").PlaySync();'])
+        else:
+            subprocess.run(['aplay', output_audio_path])
+
+if __name__ == '__main__':
+    args = get_args()
+    main(args)

@@ -9,7 +9,7 @@ if __name__ == '__main__':
   parser.add_argument("--text_cleaners", nargs="+", default=["korean_cleaners"], help="text cleaners")
 
   args = parser.parse_args()
-    
+
 
   for filelist in args.filelists:
     print("START:", filelist)

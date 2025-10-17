@@ -7,7 +7,7 @@ import cn2an
 import logging
 
 
-# List of (Latin alphabet, bopomofo) pairs:
+
 _latin_to_bopomofo = [(re.compile('%s' % x[0], re.IGNORECASE), x[1]) for x in [
     ('a', 'ㄟˉ'),
     ('b', 'ㄅㄧˋ'),
@@ -37,7 +37,7 @@ _latin_to_bopomofo = [(re.compile('%s' % x[0], re.IGNORECASE), x[1]) for x in [
     ('z', 'ㄗㄟˋ')
 ]]
 
-# List of (bopomofo, romaji) pairs:
+
 _bopomofo_to_romaji = [(re.compile('%s' % x[0]), x[1]) for x in [
     ('ㄅㄛ', 'p⁼wo'),
     ('ㄆㄛ', 'pʰwo'),
@@ -97,7 +97,7 @@ _bopomofo_to_romaji = [(re.compile('%s' % x[0]), x[1]) for x in [
     ('—', '-')
 ]]
 
-# List of (romaji, ipa) pairs:
+
 _romaji_to_ipa = [(re.compile('%s' % x[0], re.IGNORECASE), x[1]) for x in [
     ('ʃy', 'ʃ'),
     ('ʧʰy', 'ʧʰ'),
@@ -108,7 +108,7 @@ _romaji_to_ipa = [(re.compile('%s' % x[0], re.IGNORECASE), x[1]) for x in [
     ('h', 'x')
 ]]
 
-# List of (bopomofo, ipa) pairs:
+
 _bopomofo_to_ipa = [(re.compile('%s' % x[0]), x[1]) for x in [
     ('ㄅㄛ', 'p⁼wo'),
     ('ㄆㄛ', 'pʰwo'),
@@ -170,7 +170,7 @@ _bopomofo_to_ipa = [(re.compile('%s' % x[0]), x[1]) for x in [
     ('—', '-')
 ]]
 
-# List of (bopomofo, ipa2) pairs:
+
 _bopomofo_to_ipa2 = [(re.compile('%s' % x[0]), x[1]) for x in [
     ('ㄅㄛ', 'pwo'),
     ('ㄆㄛ', 'pʰwo'),

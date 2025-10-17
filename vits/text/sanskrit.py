@@ -2,7 +2,7 @@ import re
 from indic_transliteration import sanscript
 
 
-# List of (iast, ipa) pairs:
+
 _iast_to_ipa = [(re.compile('%s' % x[0]), x[1]) for x in [
     ('a', 'ə'),
     ('ā', 'aː'),

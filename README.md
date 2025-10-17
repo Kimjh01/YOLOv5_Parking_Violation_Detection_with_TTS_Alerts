@@ -1,58 +1,84 @@
-# 요일별 주차 단속과 소화전 앞 불법주차 디텍팅 및 음성안내
+# YOLOv5 License Plate and Fire Hydrant Detection with TTS Alerts
 
-### Seongeun Lee, Juho Kim, Hyein Bae
+*by Seongeun Lee, Juho Kim, Hyein Bae*
 
-간단한 설명: YOLOv5를 이용하여 번호판과 번호판 글자를 인식합니다. 번호판마다 차량종류(대형,소형,응급차 등등)를 인식합니다. YOLOv5로만 글자를 다 인식하게 하여 불필요한 추가학습은 제거 했습니다. 소화전 또한 같이 탐색 하였습니다. 인식된 번호판을 TEXT로 출력하였습니다.
-[YOLOv5](https://github.com/ultralytics/yolov5)
-음성안내는 카카오에서 만든 VITs TTS모델을 이용하여 학습하였습니다.[참고1.VITs](https://github.com/jaywalnut310/vits)과 [참고2.VITs](https://github.com/ouor/vits?tab=readme-ov-file)를 참고해주시기 바랍니다.
+This project uses YOLOv5 to detect license plates, license plate characters, and fire hydrants. It also classifies vehicle types (e.g., large, small, emergency). The system then uses a VITS TTS model to generate audio alerts based on the detected information.
 
-목소리는 Korean Single Speaker Speech Dataset(KSS)으로 학습하였습니다.
-[KSS_Dataset](https://www.kaggle.com/datasets/bryanpark/korean-single-speaker-speech-dataset)데이터셋은 이곳에서 다운로드 하였습니다.
+The text recognition is done solely with YOLOv5, eliminating the need for additional training. The TTS model was trained using the VITS model from Kakao.
 
-```sh
-conda create -n detect_car python==3.9
-conda activate detect_car
-pip3 install torch==1.13.1 torchvision==0.14.1 torchaudio==0.13.1 --index-url https://download.pytorch.org/whl/cu117
-cd vits
-pip install -r requirements.txt
-```
+- [YOLOv5](https://github.com/ultralytics/yolov5)
+- [VITS Reference 1](https://github.com/jaywalnut310/vits)
+- [VITS Reference 2](https://github.com/ouor/vits?tab=readme-ov-file)
 
-4500개의 번호판 데이터와 1500개의 소화전으로 YOLOv5를 학습시켰습니다.
-훈련은 100번 200번 시켰습니다.
-훈련파일은 pt폴더에 제공하겠습니다.
+## Installation
 
+1.  Create and activate a new conda environment:
+    ```sh
+    conda create -n detect_car python==3.9
+    conda activate detect_car
+    ```
 
-<table style="width:100%">
-  <tr>
-    <th>번호판 훈련</th>
-    <th>소화전 훈련</th>
-  </tr>
-  <tr>
-    <td><img src="img_result/fig_1.png" alt="lisense_training" width="400"height="400"></td>
-    <td><img src="img_result/fig_2.png" alt="fireplug_training" width="400"height="400"></td>
-  </tr>
-</table>
-pt 파일경로를 반드시 준수해주시기 바랍니다.
- 
-pt파일은 [Drive](https://drive.google.com/drive/folders/1or_V69FZXuKrP0Shms51-A8xhTkm7ppT?usp=drive_link)에서 확인부탁드립니다.
+2.  Install the required PyTorch version:
+    ```sh
+    pip3 install torch==1.13.1 torchvision==0.14.1 torchaudio==0.13.1 --index-url https://download.pytorch.org/whl/cu117
+    ```
+
+3.  Install the remaining dependencies:
+    ```sh
+    pip install -r requirements.txt
+    ```
+    
+4. Navigate to the vits directory and install its requirements:
+    ```sh
+    cd vits
+    pip install -r requirements.txt
+    ```
+
+## Model Weights
+
+The YOLOv5 models were trained on a custom dataset of 4500 license plates and 1500 fire hydrants for 100 and 200 epochs, respectively. The VITS TTS model was trained on the Korean Single Speaker Speech Dataset (KSS), which can be downloaded from [here](https://www.kaggle.com/datasets/bryanpark/korean-single-speaker-speech-dataset).
+
+Download the pre-trained model weights from this [Google Drive link](https://drive.google.com/drive/folders/1or_V69FZXuKrP0Shms51-A8xhTkm7ppT?usp=drive_link) and place them in the correct directories as shown below:
+
 ```
 ./
-├──vits
-|    └── checkpoint
-|             └──lasttry    
-|                  └──G_51000.pt, D_51000.pt
-└── fire_epoch200.pt,car_epoch100.pt
+├── vits/
+│   └── checkpoints/
+│       └── lasttry/
+│           ├── G_51000.pt
+│           └── D_51000.pt
+├── fire_epoch200.pt
+└── car_epoch100.pt
 ```
 
+## Usage
 
-- main.py 에서 적용시킬 이미지를 설정해줍니다.
-```sh
-python main.py
-```
+1.  Open the `main.py` file and specify the path to the image you want to process.
 
+2.  Run the main script:
+    ```sh
+    python main.py
+    ```
 
-<img src="img_result/result_a.jpg" alt="lisense_training" height="400">
-결과 이미지입니다. 
-음성파일과 텍스트번호판 인식 파일은 others_result 폴더에서 확인하시면 됩니다.
+The output will include the detected license plate text and an audio file with the TTS alert. These can be found in the `others_result` folder.
 
+## Results
 
+<table>
+  <tr>
+    <td align="center"><b>System Flowchart</b></td>
+    <td align="center"><b>Project Overview</b></td>
+  </tr>
+  <tr>
+    <td><img src="./assets/fig_1.png" alt="System Flowchart" width="400"/></td>
+    <td><img src="./assets/fig_2.png" alt="Project Overview" width="400"/></td>
+  </tr>
+  <tr>
+    <td align="center"><b>License Plate Detection</b></td>
+    <td align="center"><b>Full Detection Result</b></td>
+  </tr>
+  <tr>
+    <td><img src="./assets/result_license_plate.jpg" alt="License Plate Detection Result" height="260" width="400"/></td>
+    <td><img src="./assets/result.jpg" alt="Full Detection Result" width="400"/></td>
+  </tr>
+</table>

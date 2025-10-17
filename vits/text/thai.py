@@ -4,7 +4,7 @@ from num_thai.thainumbers import NumThai
 
 num = NumThai()
 
-# List of (Latin alphabet, Thai) pairs:
+
 _latin_to_thai = [(re.compile('%s' % x[0], re.IGNORECASE), x[1]) for x in [
     ('a', 'เอ'),
     ('b','บี'),

@@ -1,4 +1,4 @@
-# Ultralytics YOLOv5 🚀, AGPL-3.0 license
+
 """Activation functions."""
 
 import torch
@@ -25,7 +25,7 @@ class Hardswish(nn.Module):
 
         Equivalent to x * F.hardsigmoid(x)
         """
-        return x * F.hardtanh(x + 3, 0.0, 6.0) / 6.0  # for TorchScript, CoreML and ONNX
+        return x * F.hardtanh(x + 3, 0.0, 6.0) / 6.0
 
 
 class Mish(nn.Module):
@@ -43,7 +43,7 @@ class MemoryEfficientMish(nn.Module):
         def forward(ctx, x):
             """Applies the Mish activation function, a smooth ReLU alternative, to the input tensor `x`."""
             ctx.save_for_backward(x)
-            return x.mul(torch.tanh(F.softplus(x)))  # x * tanh(ln(1 + exp(x)))
+            return x.mul(torch.tanh(F.softplus(x)))
 
         @staticmethod
         def backward(ctx, grad_output):
@@ -61,7 +61,7 @@ class MemoryEfficientMish(nn.Module):
 class FReLU(nn.Module):
     """FReLU activation https://arxiv.org/abs/2007.11824."""
 
-    def __init__(self, c1, k=3):  # ch_in, kernel
+    def __init__(self, c1, k=3):
         """Initializes FReLU activation with channel `c1` and kernel size `k`."""
         super().__init__()
         self.conv = nn.Conv2d(c1, c1, k, 1, 1, groups=c1, bias=False)
@@ -113,14 +113,14 @@ class MetaAconC(nn.Module):
         self.p2 = nn.Parameter(torch.randn(1, c1, 1, 1))
         self.fc1 = nn.Conv2d(c1, c2, k, s, bias=True)
         self.fc2 = nn.Conv2d(c2, c1, k, s, bias=True)
-        # self.bn1 = nn.BatchNorm2d(c2)
-        # self.bn2 = nn.BatchNorm2d(c1)
+
+
 
     def forward(self, x):
         """Applies a forward pass transforming input `x` using learnable parameters and sigmoid activation."""
         y = x.mean(dim=2, keepdims=True).mean(dim=3, keepdims=True)
-        # batch-size 1 bug/instabilities https://github.com/ultralytics/yolov5/issues/2891
-        # beta = torch.sigmoid(self.bn2(self.fc2(self.bn1(self.fc1(y)))))  # bug/unstable
-        beta = torch.sigmoid(self.fc2(self.fc1(y)))  # bug patch BN layers removed
+
+
+        beta = torch.sigmoid(self.fc2(self.fc1(y)))
         dpx = (self.p1 - self.p2) * x
         return dpx * torch.sigmoid(beta * dpx) + self.p2 * x

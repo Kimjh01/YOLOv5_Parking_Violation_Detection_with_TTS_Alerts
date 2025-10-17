@@ -1,4 +1,4 @@
-# Ultralytics YOLOv5 🚀, AGPL-3.0 license
+
 """Callback utils."""
 
 import threading
@@ -24,13 +24,13 @@ class Callbacks:
             "on_val_image_end": [],
             "on_val_batch_end": [],
             "on_val_end": [],
-            "on_fit_epoch_end": [],  # fit = train + val
+            "on_fit_epoch_end": [],
             "on_model_save": [],
             "on_train_end": [],
             "on_params_update": [],
             "teardown": [],
         }
-        self.stop_training = False  # set True to interrupt training
+        self.stop_training = False
 
     def register_action(self, hook, name="", callback=None):
         """

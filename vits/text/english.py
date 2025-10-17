@@ -13,7 +13,7 @@ hyperparameter. Some cleaners are English-specific. You'll typically want to use
 '''
 
 
-# Regular expression matching whitespace:
+
 
 
 import re
@@ -28,7 +28,7 @@ _dollars_re = re.compile(r'\$([0-9\.\,]*[0-9]+)')
 _ordinal_re = re.compile(r'[0-9]+(st|nd|rd|th)')
 _number_re = re.compile(r'[0-9]+')
 
-# List of (regular expression, replacement) pairs for abbreviations:
+
 _abbreviations = [(re.compile('\\b%s\\.' % x[0], re.IGNORECASE), x[1]) for x in [
     ('mrs', 'misess'),
     ('mr', 'mister'),
@@ -51,7 +51,7 @@ _abbreviations = [(re.compile('\\b%s\\.' % x[0], re.IGNORECASE), x[1]) for x in 
 ]]
 
 
-# List of (ipa, lazy ipa) pairs:
+
 _lazy_ipa = [(re.compile('%s' % x[0]), x[1]) for x in [
     ('r', 'ɹ'),
     ('æ', 'e'),
@@ -67,7 +67,7 @@ _lazy_ipa = [(re.compile('%s' % x[0]), x[1]) for x in [
     ('ˈ', '↓'),
 ]]
 
-# List of (ipa, lazy ipa2) pairs:
+
 _lazy_ipa2 = [(re.compile('%s' % x[0]), x[1]) for x in [
     ('r', 'ɹ'),
     ('ð', 'z'),
@@ -77,7 +77,7 @@ _lazy_ipa2 = [(re.compile('%s' % x[0]), x[1]) for x in [
     ('ˈ', '↓'),
 ]]
 
-# List of (ipa, ipa2) pairs
+
 _ipa_to_ipa2 = [(re.compile('%s' % x[0]), x[1]) for x in [
     ('r', 'ɹ'),
     ('ʤ', 'dʒ'),
@@ -107,7 +107,7 @@ def _expand_dollars(m):
     match = m.group(1)
     parts = match.split('.')
     if len(parts) > 2:
-        return match + ' dollars'  # Unexpected format
+        return match + ' dollars'
     dollars = int(parts[0]) if parts[0] else 0
     cents = int(parts[1]) if len(parts) > 1 and parts[1] else 0
     if dollars and cents:

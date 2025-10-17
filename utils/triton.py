@@ -1,4 +1,4 @@
-# Ultralytics YOLOv5 🚀, AGPL-3.0 license
+
 """Utils to interact with the Triton Inference Server."""
 
 import typing
@@ -25,7 +25,7 @@ class TritonRemoteModel:
         if parsed_url.scheme == "grpc":
             from tritonclient.grpc import InferenceServerClient, InferInput
 
-            self.client = InferenceServerClient(parsed_url.netloc)  # Triton GRPC client
+            self.client = InferenceServerClient(parsed_url.netloc)
             model_repository = self.client.get_model_repository_index()
             self.model_name = model_repository.models[0].name
             self.metadata = self.client.get_model_metadata(self.model_name, as_json=True)
@@ -38,7 +38,7 @@ class TritonRemoteModel:
         else:
             from tritonclient.http import InferenceServerClient, InferInput
 
-            self.client = InferenceServerClient(parsed_url.netloc)  # Triton HTTP client
+            self.client = InferenceServerClient(parsed_url.netloc)
             model_repository = self.client.get_model_repository_index()
             self.model_name = model_repository[0]["name"]
             self.metadata = self.client.get_model_metadata(self.model_name)
